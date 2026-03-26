@@ -4,10 +4,188 @@ from PySide6.QtWidgets import (
     QFrame, QPlainTextEdit, QTabWidget, QTableWidget,
     QTableWidgetItem, QLineEdit, QGridLayout, QSizePolicy,
 )
-from PySide6.QtCore import Qt, QTimer, QUrl
-from PySide6.QtGui import QColor, QPalette, QTextCursor, QTextCharFormat, QCursor, QDesktopServices
+from PySide6.QtCore import Qt, QTimer, QUrl, QPropertyAnimation, QEasingCurve, Property, QObject
+from PySide6.QtGui import QColor, QPalette, QTextCursor, QTextCharFormat, QCursor, QDesktopServices, QPainter, QPen, QBrush
 
 from datetime import datetime
+
+TRANSLATIONS = {
+    "en": {
+        # Titlebar
+        "status_ready": "READY",
+        "status_running": "RUNNING",
+        # Cards
+        "card_target_file": "Target File",
+        "card_attack_method": "Attack Method",
+        "card_statistics": "Statistics",
+        "card_performance": "Performance",
+        "card_save": "Save Results",
+        # File
+        "no_file": "No file selected",
+        "browse": "Browse",
+        "file_info_default": "Type: —  |  Protection: —",
+        # Attack methods
+        "method_dictionary": "Dictionary Attack",
+        "method_bruteforce": "Brute-Force",
+        "method_mask": "Mask Attack",
+        # Dictionary
+        "lbl_wordlist": "Wordlist:",
+        "select_wordlist": "Select wordlist…",
+        "no_wordlists": "No wordlists found",
+        "default_label": "  [default]",
+        # Brute-force
+        "lbl_length": "Length:",
+        "lbl_charset": "Charset:",
+        "lbl_chars": "Chars:",
+        "charset_lower": "Lowercase (a–z)",
+        "charset_upper": "Uppercase (A–Z)",
+        "charset_digits": "Digits (0–9)",
+        "charset_alnum": "Alphanumeric",
+        "charset_all": "All printable",
+        "charset_hex_l": "Hex lowercase",
+        "charset_hex_u": "Hex uppercase",
+        "charset_custom": "Custom…",
+        "custom_placeholder": "e.g.  abcdef123!@#",
+        # Mask
+        "lbl_mask": "Mask:",
+        "mask_placeholder": "e.g.  ?u?l?l?d?d?s",
+        # Stats labels
+        "stat_attempts": "Attempts",
+        "stat_speed": "Speed",
+        "stat_elapsed": "Elapsed",
+        "stat_current": "Current",
+        "stat_eta": "ETA",
+        "stat_default_speed": "0 pwd/s",
+        "stat_default_eta": "Calculating…",
+        # Buttons
+        "btn_start": "Start",
+        "btn_stop": "Stop",
+        # Tabs
+        "tab_log": "Log",
+        "tab_results": "Results",
+        "tab_settings": "Settings",
+        # Results table headers
+        "col_time": "Time",
+        "col_file": "File",
+        "col_type": "Type",
+        "col_password": "Password",
+        "col_duration": "Duration",
+        "col_status": "Status",
+        "status_found": "Found",
+        "status_not_found": "Not found",
+        # Settings
+        "perf_checkbox": "Multi-core mode (use all CPU threads)",
+        "perf_hint": "Maximises throughput by parallelising across all available cores.\nIncreases CPU load significantly.",
+        "save_checkbox": "Save results to Results.txt",
+        "save_hint": "Automatically writes each found password\nto Results.txt next to the program.",
+        # Log messages
+        "log_select_file": "Select a file first.",
+        "log_select_wordlist": "Select a wordlist.",
+        "log_enter_mask": "Enter a mask pattern.",
+        "log_wordlist_not_found": "Wordlist not found: ",
+        "log_attack_started": "Attack started",
+        "log_file": "File: ",
+        "log_mode_multicore": "Mode: multi-core",
+        "log_stopped": "Attack stopped by user.",
+        "log_not_found": "Attack completed. Password not found.",
+        "log_password_found": "PASSWORD FOUND",
+        "confirm_title": "Confirm",
+        "confirm_msg": "This file has no password protection. Continue anyway?",
+    },
+    "ru": {
+        # Titlebar
+        "status_ready": "ГОТОВ",
+        "status_running": "РАБОТАЕТ",
+        # Cards
+        "card_target_file": "Целевой файл",
+        "card_attack_method": "Метод подбора",
+        "card_statistics": "Статистика",
+        "card_performance": "Производительность",
+        "card_save": "Сохранение результатов",
+        # File
+        "no_file": "Файл не выбран",
+        "browse": "Обзор",
+        "file_info_default": "Тип: —  |  Защита: —",
+        # Attack methods
+        "method_dictionary": "Атака по словарю",
+        "method_bruteforce": "Перебор",
+        "method_mask": "Атака по маске",
+        # Dictionary
+        "lbl_wordlist": "Словарь:",
+        "select_wordlist": "Выберите словарь…",
+        "no_wordlists": "Словари не найдены",
+        "default_label": "  [по умолч.]",
+        # Brute-force
+        "lbl_length": "Длина:",
+        "lbl_charset": "Символы:",
+        "lbl_chars": "Символы:",
+        "charset_lower": "Строчные (a–z)",
+        "charset_upper": "Заглавные (A–Z)",
+        "charset_digits": "Цифры (0–9)",
+        "charset_alnum": "Буквы и цифры",
+        "charset_all": "Все печатные",
+        "charset_hex_l": "Hex строчные",
+        "charset_hex_u": "Hex заглавные",
+        "charset_custom": "Свои…",
+        "custom_placeholder": "напр.  abcdef123!@#",
+        # Mask
+        "lbl_mask": "Маска:",
+        "mask_placeholder": "напр.  ?u?l?l?d?d?s",
+        # Stats labels
+        "stat_attempts": "Попытки",
+        "stat_speed": "Скорость",
+        "stat_elapsed": "Прошло",
+        "stat_current": "Текущий",
+        "stat_eta": "Осталось",
+        "stat_default_speed": "0 пар/с",
+        "stat_default_eta": "Вычисление…",
+        # Buttons
+        "btn_start": "Начать",
+        "btn_stop": "Стоп",
+        # Tabs
+        "tab_log": "Журнал",
+        "tab_results": "Результаты",
+        "tab_settings": "Настройки",
+        # Results table headers
+        "col_time": "Время",
+        "col_file": "Файл",
+        "col_type": "Тип",
+        "col_password": "Пароль",
+        "col_duration": "Длительность",
+        "col_status": "Статус",
+        "status_found": "Найден",
+        "status_not_found": "Не найден",
+        # Settings
+        "perf_checkbox": "Многоядерный режим (все потоки CPU)",
+        "perf_hint": "Максимизирует производительность за счёт\nраспараллеливания по всем ядрам.\nЗначительно увеличивает нагрузку на CPU.",
+        "save_checkbox": "Сохранять результаты в Results.txt",
+        "save_hint": "Автоматически записывает каждый найденный\nпароль в файл Results.txt рядом с программой.",
+        # Log messages
+        "log_select_file": "Сначала выберите файл.",
+        "log_select_wordlist": "Выберите словарь.",
+        "log_enter_mask": "Введите маску.",
+        "log_wordlist_not_found": "Словарь не найден: ",
+        "log_attack_started": "Атака начата",
+        "log_file": "Файл: ",
+        "log_mode_multicore": "Режим: многоядерный",
+        "log_stopped": "Атака остановлена пользователем.",
+        "log_not_found": "Атака завершена. Пароль не найден.",
+        "log_password_found": "ПАРОЛЬ НАЙДЕН",
+        "confirm_title": "Подтверждение",
+        "confirm_msg": "Файл не защищён паролем. Продолжить?",
+    },
+}
+
+# Global current language
+_current_lang = "en"
+
+def tr(key):
+    """Get translation for key in current language."""
+    return TRANSLATIONS.get(_current_lang, TRANSLATIONS["en"]).get(key, key)
+
+def set_language(lang):
+    global _current_lang
+    _current_lang = lang
 
 def build_palette():
     pal = QPalette()
@@ -30,6 +208,7 @@ def build_palette():
     pal.setColor(QPalette.Highlight,       acc)
     pal.setColor(QPalette.HighlightedText, QColor(255, 255, 255))
     return pal
+
 
 MAIN_STYLESHEET = """
 /* Base */
@@ -172,7 +351,7 @@ QLineEdit {
 QLineEdit:hover { border-color: #555558; }
 QLineEdit:focus { border-color: #3a7bd5; }
 
-/* CheckBox */
+/* CheckBox — overridden by custom widget, these are fallback */
 QCheckBox {
     color: #c8c8c8;
     font-size: 9.5pt;
@@ -184,10 +363,10 @@ QCheckBox::indicator {
     border: 1px solid #4a4a4c;
     background-color: #2a2a2c;
 }
-QCheckBox::indicator:hover   { border-color: #3a7bd5; }
+QCheckBox::indicator:hover   { border-color: #c8963a; }
 QCheckBox::indicator:checked {
-    background-color: #3a7bd5;
-    border-color: #3a7bd5;
+    background-color: #c8963a;
+    border-color: #c8963a;
 }
 
 /* ProgressBar */
@@ -334,7 +513,6 @@ QLabel {
 }
 """
 
-# File label no file selected
 FILE_LABEL_EMPTY_STYLE = """
 QLabel {
     color: #888;
@@ -346,7 +524,6 @@ QLabel {
 }
 """
 
-# File label file chosen
 FILE_LABEL_SELECTED_STYLE = """
 QLabel {
     color: #d0d0d0;
@@ -358,7 +535,6 @@ QLabel {
 }
 """
 
-# High-contrast terminal stylesheet (always active)
 TERMINAL_HC_STYLE = """
 QPlainTextEdit {
     background-color: #000000;
@@ -379,7 +555,6 @@ class HoverLinkLabel(QLabel):
         self._base_style = "color: #6a6a6a; font-size: 9pt; padding-left: 10px;"
         self._hover_style = "color: #b8b8b8; font-size: 9pt; padding-left: 10px; text-decoration: underline;"
         self.setCursor(QCursor(Qt.ArrowCursor))
-        self.setToolTip("")
         self.setStyleSheet(self._base_style)
 
     def enterEvent(self, event):
@@ -396,6 +571,238 @@ class HoverLinkLabel(QLabel):
         if event.button() == Qt.LeftButton:
             QDesktopServices.openUrl(QUrl(self.url))
         super().mousePressEvent(event)
+
+
+class LanguageToggle(QWidget):
+
+    def __init__(self, parent=None, on_change=None):
+        super().__init__(parent)
+        self._is_russian = False
+        self._on_change = on_change
+        self.setFixedSize(88, 30)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setToolTip("Switch language / Сменить язык")
+
+        # Animation for knob
+        self._knob_x = 4
+        self._anim_timer = QTimer(self)
+        self._anim_timer.timeout.connect(self._animate_step)
+        self._anim_dir = 0
+        self._anim_target = 4
+
+    @property
+    def is_russian(self):
+        return self._is_russian
+
+    def set_russian(self, val: bool):
+        self._is_russian = val
+        self._anim_target = 50 if val else 4
+        self._anim_dir = 1 if val else -1
+        self._anim_timer.start(10)
+        self.update()
+
+    def _animate_step(self):
+        step = 4
+        if self._anim_dir > 0:
+            self._knob_x = min(self._knob_x + step, self._anim_target)
+        else:
+            self._knob_x = max(self._knob_x - step, self._anim_target)
+        self.update()
+        if self._knob_x == self._anim_target:
+            self._anim_timer.stop()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._is_russian = not self._is_russian
+            self._anim_target = 50 if self._is_russian else 4
+            self._anim_dir = 1 if self._is_russian else -1
+            self._anim_timer.start(10)
+            if self._on_change:
+                self._on_change(self._is_russian)
+        super().mousePressEvent(event)
+
+    def paintEvent(self, event):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+
+        # Track background
+        track_color = QColor(42, 42, 44)
+        p.setBrush(QBrush(track_color))
+        p.setPen(QPen(QColor(60, 60, 62), 1))
+        p.drawRoundedRect(0, 3, 88, 24, 12, 12)
+
+        # Flag labels
+        p.setFont(self.font())
+        p.setPen(QColor(180, 180, 180))
+
+        # 🇺🇸 left side
+        p.drawText(6, 3, 34, 24, Qt.AlignCenter, "🇺🇸")
+        # 🇷🇺 right side
+        p.drawText(48, 3, 34, 24, Qt.AlignCenter, "🇷🇺")
+
+        # Knob
+        knob_color = QColor(58, 123, 213) if not self._is_russian else QColor(200, 60, 60)
+        p.setBrush(QBrush(knob_color))
+        p.setPen(QPen(QColor(80, 80, 82), 1))
+        p.drawRoundedRect(self._knob_x, 5, 34, 20, 10, 10)
+
+        # Active flag on knob
+        p.setPen(QColor(255, 255, 255))
+        flag = "🇷🇺" if self._is_russian else "🇺🇸"
+        p.drawText(self._knob_x, 5, 34, 20, Qt.AlignCenter, flag)
+
+        p.end()
+
+
+class PulsingBrowseButton(QPushButton):
+
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self._pulse_alpha = 0
+        self._pulse_dir = 1
+        self._file_selected = False
+
+        self._pulse_timer = QTimer(self)
+        self._pulse_timer.timeout.connect(self._pulse_step)
+        self._pulse_timer.start(30)
+
+    def set_file_selected(self, selected: bool):
+        self._file_selected = selected
+        if selected:
+            self._pulse_timer.stop()
+            self._pulse_alpha = 0
+        else:
+            self._pulse_timer.start(30)
+        self.update()
+
+    def _pulse_step(self):
+        self._pulse_alpha += self._pulse_dir * 6
+        if self._pulse_alpha >= 200:
+            self._pulse_alpha = 200
+            self._pulse_dir = -1
+        elif self._pulse_alpha <= 0:
+            self._pulse_alpha = 0
+            self._pulse_dir = 1
+        self.update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if not self._file_selected and self._pulse_alpha > 0:
+            p = QPainter(self)
+            p.setRenderHint(QPainter.Antialiasing)
+            glow_color = QColor(31, 170, 89, self._pulse_alpha)
+            pen = QPen(glow_color, 2)
+            p.setPen(pen)
+            p.setBrush(Qt.NoBrush)
+            p.drawRoundedRect(1, 1, self.width() - 2, self.height() - 2, 5, 5)
+            p.end()
+
+
+class StyledCheckBox(QWidget):
+
+    def __init__(self, text="", parent=None):
+        super().__init__(parent)
+        self._checked = False
+        self._hovered = False
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+
+        self._indicator = QLabel()
+        self._indicator.setFixedSize(18, 18)
+        self._indicator.setAlignment(Qt.AlignCenter)
+
+        self._label = QLabel(text)
+        self._label.setStyleSheet("color: #c8c8c8; font-size: 9.5pt; background: transparent;")
+        self._label.setWordWrap(False)
+
+        layout.addWidget(self._indicator)
+        layout.addWidget(self._label)
+        layout.addStretch()
+
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self._update_style()
+
+    def _update_style(self):
+        if self._checked:
+            style = """
+QLabel {
+    background-color: #c8843a;
+    border: 1px solid #e8a050;
+    border-radius: 4px;
+    color: white;
+    font-size: 9pt;
+    font-weight: bold;
+}"""
+            self._indicator.setStyleSheet(style)
+            self._indicator.setText("✓")
+        else:
+            border_col = "#c8843a" if self._hovered else "#4a4a4c"
+            style = f"""
+QLabel {{
+    background-color: #2a2a2c;
+    border: 1px solid {border_col};
+    border-radius: 4px;
+    color: transparent;
+    font-size: 9pt;
+}}"""
+            self._indicator.setStyleSheet(style)
+            self._indicator.setText("")
+
+    def isChecked(self):
+        return self._checked
+
+    def setChecked(self, val: bool):
+        self._checked = val
+        self._update_style()
+
+    def setText(self, text):
+        self._label.setText(text)
+
+    def text(self):
+        return self._label.text()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._checked = not self._checked
+            self._update_style()
+            # emit stateChanged-like
+            if hasattr(self, '_on_toggle') and self._on_toggle:
+                self._on_toggle(self._checked)
+        super().mousePressEvent(event)
+
+    def enterEvent(self, event):
+        self._hovered = True
+        self._update_style()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self._hovered = False
+        self._update_style()
+        super().leaveEvent(event)
+
+    def connect_toggle(self, fn):
+        self._on_toggle = fn
+
+    class _FakeSignal:
+        def __init__(self, widget):
+            self._widget = widget
+            self._callbacks = []
+        def connect(self, fn):
+            self._callbacks.append(fn)
+            self._widget._on_toggle = lambda v: [cb(2 if v else 0) for cb in self._callbacks]
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+    @property
+    def stateChanged(self):
+        if not hasattr(self, '_fake_signal'):
+            self._fake_signal = StyledCheckBox._FakeSignal(self)
+            self._on_toggle = None
+        return self._fake_signal
+
 
 class ModernTerminal(QPlainTextEdit):
 
@@ -421,7 +828,7 @@ class ModernTerminal(QPlainTextEdit):
 
 def build_ui(main_window):
 
-    refs = {}   # collects all named references to return
+    refs = {}
 
     root = QWidget()
     main_window.setCentralWidget(root)
@@ -429,7 +836,6 @@ def build_ui(main_window):
     root_layout.setContentsMargins(0, 0, 0, 0)
     root_layout.setSpacing(0)
 
-    # Titlebar
     titlebar = QFrame()
     titlebar.setFixedHeight(48)
     titlebar.setStyleSheet("""
@@ -452,15 +858,21 @@ QLabel {
 }
 """)
 
-    author_lbl = HoverLinkLabel("by Medvedeff", "https://github.com/medvedeff-true")
+    author_lbl = HoverLinkLabel("info", "https://github.com/medvedeff-true/Bruteforcer")
     author_lbl.setStyleSheet("color: #6a6a6a; font-size: 9pt; padding-left: 10px;")
 
     tb_layout.addWidget(app_name)
     tb_layout.addWidget(author_lbl)
     tb_layout.addStretch()
 
-    status_badge = QLabel("READY")
-    status_badge.setFixedSize(72, 24)
+    # Language toggle
+    lang_toggle = LanguageToggle(on_change=lambda is_ru: main_window._on_language_change(is_ru))
+    refs["lang_toggle"] = lang_toggle
+    tb_layout.addWidget(lang_toggle)
+    tb_layout.addSpacing(12)
+
+    status_badge = QLabel(tr("status_ready"))
+    status_badge.setFixedSize(86, 24)
     status_badge.setAlignment(Qt.AlignCenter)
     status_badge.setStyleSheet(STATUS_READY_STYLE)
     tb_layout.addWidget(status_badge)
@@ -468,14 +880,12 @@ QLabel {
 
     root_layout.addWidget(titlebar)
 
-    # Content area
     content = QWidget()
     content.setStyleSheet("QWidget { background-color: #1c1c1e; }")
     content_layout = QHBoxLayout(content)
     content_layout.setContentsMargins(16, 16, 16, 16)
     content_layout.setSpacing(14)
 
-    # LEFT COLUMN
     left_col = QWidget()
     left_col.setFixedWidth(340)
     left_layout = QVBoxLayout(left_col)
@@ -483,23 +893,26 @@ QLabel {
     left_layout.setSpacing(12)
 
     # File card
-    file_card = QGroupBox("Target File")
+    file_card = QGroupBox(tr("card_target_file"))
+    refs["file_card"] = file_card
     fc_layout = QVBoxLayout(file_card)
     fc_layout.setSpacing(6)
 
     file_row = QHBoxLayout()
-    file_label = QLabel("No file selected")
+    file_label = QLabel(tr("no_file"))
     file_label.setStyleSheet(FILE_LABEL_EMPTY_STYLE)
     file_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
     refs["file_label"] = file_label
 
-    browse_btn = QPushButton("Browse")
+    browse_btn = PulsingBrowseButton(tr("browse"))
     browse_btn.setFixedWidth(80)
     browse_btn.clicked.connect(main_window.select_file)
+    refs["browse_btn"] = browse_btn
+
     file_row.addWidget(file_label)
     file_row.addWidget(browse_btn)
 
-    file_info_label = QLabel("Type: —  |  Protection: —")
+    file_info_label = QLabel(tr("file_info_default"))
     file_info_label.setStyleSheet("color: #505050; font-size: 8.5pt; padding: 2px 2px;")
     refs["file_info_label"] = file_info_label
 
@@ -508,12 +921,13 @@ QLabel {
     left_layout.addWidget(file_card)
 
     # Attack method card
-    method_card = QGroupBox("Attack Method")
+    method_card = QGroupBox(tr("card_attack_method"))
+    refs["method_card"] = method_card
     mc_layout = QVBoxLayout(method_card)
     mc_layout.setSpacing(8)
 
     attack_combo = QComboBox()
-    attack_combo.addItems(["Dictionary Attack", "Brute-Force", "Mask Attack"])
+    attack_combo.addItems([tr("method_dictionary"), tr("method_bruteforce"), tr("method_mask")])
     attack_combo.currentIndexChanged.connect(main_window.update_attack_method)
     refs["attack_combo"] = attack_combo
     mc_layout.addWidget(attack_combo)
@@ -531,9 +945,10 @@ QLabel {
     dw_layout.setContentsMargins(0, 0, 0, 0)
     dw_layout.setSpacing(6)
 
-    dict_lbl = QLabel("Wordlist:")
+    dict_lbl = QLabel(tr("lbl_wordlist"))
     dict_lbl.setStyleSheet("color: #666; font-size: 9pt;")
     dict_lbl.setFixedWidth(58)
+    refs["dict_lbl"] = dict_lbl
 
     dict_combo = QComboBox()
     refs["dict_combo"] = dict_combo
@@ -556,9 +971,10 @@ QLabel {
     bfw.setSpacing(6)
 
     len_row = QHBoxLayout()
-    len_lbl = QLabel("Length:")
+    len_lbl = QLabel(tr("lbl_length"))
     len_lbl.setStyleSheet("color: #666; font-size: 9pt;")
-    len_lbl.setFixedWidth(50)
+    len_lbl.setFixedWidth(58)
+    refs["len_lbl"] = len_lbl
 
     min_length = QSpinBox()
     min_length.setRange(1, 20)
@@ -584,20 +1000,16 @@ QLabel {
     len_row.addStretch()
 
     cs_row = QHBoxLayout()
-    cs_lbl = QLabel("Charset:")
+    cs_lbl = QLabel(tr("lbl_charset"))
     cs_lbl.setStyleSheet("color: #666; font-size: 9pt;")
-    cs_lbl.setFixedWidth(50)
+    cs_lbl.setFixedWidth(58)
+    refs["cs_lbl"] = cs_lbl
 
     charset_combo = QComboBox()
     charset_combo.addItems([
-        "Lowercase (a–z)",
-        "Uppercase (A–Z)",
-        "Digits (0–9)",
-        "Alphanumeric",
-        "All printable",
-        "Hex lowercase",
-        "Hex uppercase",
-        "Custom…",
+        tr("charset_lower"), tr("charset_upper"), tr("charset_digits"),
+        tr("charset_alnum"), tr("charset_all"), tr("charset_hex_l"),
+        tr("charset_hex_u"), tr("charset_custom"),
     ])
     charset_combo.currentIndexChanged.connect(main_window.update_charset_widget)
     refs["charset_combo"] = charset_combo
@@ -609,11 +1021,12 @@ QLabel {
     ccw = QHBoxLayout(custom_charset_widget)
     ccw.setContentsMargins(0, 0, 0, 0)
     ccw.setSpacing(6)
-    cc_lbl = QLabel("Chars:")
+    cc_lbl = QLabel(tr("lbl_chars"))
     cc_lbl.setStyleSheet("color: #666; font-size: 9pt;")
-    cc_lbl.setFixedWidth(50)
+    cc_lbl.setFixedWidth(58)
+    refs["cc_lbl"] = cc_lbl
     custom_charset_edit = QLineEdit()
-    custom_charset_edit.setPlaceholderText("e.g.  abcdef123!@#")
+    custom_charset_edit.setPlaceholderText(tr("custom_placeholder"))
     refs["custom_charset_edit"] = custom_charset_edit
     ccw.addWidget(cc_lbl)
     ccw.addWidget(custom_charset_edit, 1)
@@ -644,11 +1057,12 @@ QLabel {
 """)
 
     mask_row = QHBoxLayout()
-    mask_lbl = QLabel("Mask:")
+    mask_lbl = QLabel(tr("lbl_mask"))
     mask_lbl.setStyleSheet("color: #666; font-size: 9pt;")
-    mask_lbl.setFixedWidth(50)
+    mask_lbl.setFixedWidth(58)
+    refs["mask_lbl"] = mask_lbl
     mask_edit = QLineEdit()
-    mask_edit.setPlaceholderText("e.g.  ?u?l?l?d?d?s")
+    mask_edit.setPlaceholderText(tr("mask_placeholder"))
     refs["mask_edit"] = mask_edit
     mask_row.addWidget(mask_lbl)
     mask_row.addWidget(mask_edit, 1)
@@ -664,25 +1078,29 @@ QLabel {
     left_layout.addWidget(method_card)
 
     # Statistics card
-    stats_card = QGroupBox("Statistics")
+    stats_card = QGroupBox(tr("card_statistics"))
+    refs["stats_card"] = stats_card
     stats_grid = QGridLayout(stats_card)
     stats_grid.setContentsMargins(10, 14, 10, 10)
     stats_grid.setSpacing(5)
     stats_grid.setColumnStretch(1, 1)
 
     stat_defs = [
-        ("Attempts",  "passwords_tried",  "0"),
-        ("Speed",     "speed",            "0 pwd/s"),
-        ("Elapsed",   "elapsed",          "0 s"),
-        ("Current",   "current_password", "—"),
-        ("ETA",       "estimated_time",   "Calculating…"),
+        ("stat_attempts",  "passwords_tried",  "0"),
+        ("stat_speed",     "speed",            tr("stat_default_speed")),
+        ("stat_elapsed",   "elapsed",          "0 s"),
+        ("stat_current",   "current_password", "—"),
+        ("stat_eta",       "estimated_time",   tr("stat_default_eta")),
     ]
 
     stats_labels = {}
-    for i, (name, key, default) in enumerate(stat_defs):
-        k_lbl = QLabel(name)
+    stats_key_labels = {}
+    for i, (name_key, key, default) in enumerate(stat_defs):
+        k_lbl = QLabel(tr(name_key))
         k_lbl.setStyleSheet(
             "color: #505050; font-size: 8pt; font-weight: 600; letter-spacing: 0.5px;")
+        refs[f"stat_key_{name_key}"] = k_lbl
+        stats_key_labels[name_key] = k_lbl
 
         v_lbl = QLabel(default)
         v_lbl.setStyleSheet("""
@@ -698,6 +1116,7 @@ QLabel {
         stats_labels[key] = v_lbl
 
     refs["stats_labels"] = stats_labels
+    refs["stats_key_labels"] = stats_key_labels
     left_layout.addWidget(stats_card)
 
     # Progress
@@ -711,14 +1130,14 @@ QLabel {
     btn_row = QHBoxLayout()
     btn_row.setSpacing(8)
 
-    start_btn = QPushButton("Start Attack")
+    start_btn = QPushButton(tr("btn_start"))
     start_btn.setProperty("primary", True)
     start_btn.setFixedHeight(36)
     start_btn.clicked.connect(main_window.start_attack)
     start_btn.setEnabled(False)
     refs["start_btn"] = start_btn
 
-    stop_btn = QPushButton("Stop")
+    stop_btn = QPushButton(tr("btn_stop"))
     stop_btn.setProperty("danger", True)
     stop_btn.setFixedHeight(36)
     stop_btn.setFixedWidth(90)
@@ -731,7 +1150,6 @@ QLabel {
     left_layout.addLayout(btn_row)
     left_layout.addStretch()
 
-    # RIGHT COLUMN
     right_col = QWidget()
     right_layout = QVBoxLayout(right_col)
     right_layout.setContentsMargins(0, 0, 0, 0)
@@ -755,7 +1173,7 @@ QPlainTextEdit {
     selection-background-color: #335577;
 }
 """)
-    tab_widget.addTab(terminal, "Log")
+    tab_widget.addTab(terminal, tr("tab_log"))
     refs["terminal"] = terminal
 
     # Results tab
@@ -765,8 +1183,11 @@ QPlainTextEdit {
     ro_layout.setContentsMargins(6, 6, 6, 6)
 
     results_table = QTableWidget()
-    results_table.setColumnCount(5)
-    results_table.setHorizontalHeaderLabels(["Time", "File", "Type", "Password", "Status"])
+    results_table.setColumnCount(6)
+    results_table.setHorizontalHeaderLabels([
+        tr("col_time"), tr("col_file"), tr("col_type"),
+        tr("col_password"), tr("col_duration"), tr("col_status"),
+    ])
     results_table.horizontalHeader().setStretchLastSection(True)
     results_table.setAlternatingRowColors(True)
     results_table.verticalHeader().setVisible(False)
@@ -776,7 +1197,7 @@ QPlainTextEdit {
     refs["results_table"] = results_table
 
     ro_layout.addWidget(results_table)
-    tab_widget.addTab(results_outer, "Results")
+    tab_widget.addTab(results_outer, tr("tab_results"))
 
     # Settings tab
     settings_outer = QWidget()
@@ -785,28 +1206,48 @@ QPlainTextEdit {
     so_layout.setContentsMargins(16, 16, 16, 16)
     so_layout.setSpacing(16)
 
-    perf_section = QGroupBox("Performance")
+    # Performance section
+    perf_section = QGroupBox(tr("card_performance"))
+    refs["perf_section"] = perf_section
     ps_layout = QVBoxLayout(perf_section)
-    ps_layout.setSpacing(4)
+    ps_layout.setSpacing(6)
 
-    performant_checkbox = QCheckBox("Multi-core mode (use all CPU threads)")
+    performant_checkbox = StyledCheckBox(tr("perf_checkbox"))
     performant_checkbox.setChecked(True)
     refs["performant_checkbox"] = performant_checkbox
     ps_layout.addWidget(performant_checkbox)
 
-    perf_hint = QLabel(
-        "Maximises throughput by parallelising across all available cores.\n"
-        "Increases CPU load significantly."
-    )
+    perf_hint = QLabel(tr("perf_hint"))
+    refs["perf_hint"] = perf_hint
     perf_hint.setStyleSheet(
-        "color: #484848; font-size: 8.5pt; padding-left: 24px; line-height: 160%;")
+        "color: #484848; font-size: 8.5pt; padding-left: 26px; line-height: 160%;")
     perf_hint.setWordWrap(True)
     ps_layout.addWidget(perf_hint)
 
     so_layout.addWidget(perf_section)
+
+    # Save results section
+    save_section = QGroupBox(tr("card_save"))
+    refs["save_section"] = save_section
+    sv_layout = QVBoxLayout(save_section)
+    sv_layout.setSpacing(6)
+
+    save_checkbox = StyledCheckBox(tr("save_checkbox"))
+    save_checkbox.setChecked(True)
+    refs["save_checkbox"] = save_checkbox
+    sv_layout.addWidget(save_checkbox)
+
+    save_hint = QLabel(tr("save_hint"))
+    refs["save_hint"] = save_hint
+    save_hint.setStyleSheet(
+        "color: #484848; font-size: 8.5pt; padding-left: 26px; line-height: 160%;")
+    save_hint.setWordWrap(True)
+    sv_layout.addWidget(save_hint)
+
+    so_layout.addWidget(save_section)
     so_layout.addStretch()
 
-    tab_widget.addTab(settings_outer, "Settings")
+    tab_widget.addTab(settings_outer, tr("tab_settings"))
 
     right_layout.addWidget(tab_widget)
 
