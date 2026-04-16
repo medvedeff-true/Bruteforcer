@@ -3,8 +3,9 @@ from PySide6.QtWidgets import (
     QProgressBar, QGroupBox, QCheckBox, QSpinBox, QComboBox,
     QFrame, QPlainTextEdit, QTabWidget, QTableWidget,
     QTableWidgetItem, QLineEdit, QGridLayout, QSizePolicy,
+    QAbstractSpinBox, QStyle,
 )
-from PySide6.QtCore import Qt, QTimer, QUrl, QPropertyAnimation, QEasingCurve, Property, QObject
+from PySide6.QtCore import Qt, QTimer, QUrl, QPropertyAnimation, QEasingCurve, Property, QObject, QSize
 from PySide6.QtGui import QColor, QPalette, QTextCursor, QTextCharFormat, QCursor, QDesktopServices, QPainter, QPen, QBrush
 
 from datetime import datetime
@@ -68,14 +69,22 @@ TRANSLATIONS = {
         "col_time": "Time",
         "col_file": "File",
         "col_type": "Type",
+        "col_protection": "Protection",
         "col_password": "Password",
         "col_duration": "Duration",
         "col_status": "Status",
         "status_found": "Found",
         "status_not_found": "Not found",
+        "btn_clear_log": "Clear log",
+        "btn_export": "Export",
+        "btn_restore": "Restore",
         # Settings
         "perf_checkbox": "Multi-core mode (use all CPU threads)",
         "perf_hint": "Maximises throughput by parallelising across all available cores.\nIncreases CPU load significantly.",
+        "backend_label": "Backend:",
+        "backend_cpu": "CPU",
+        "backend_gpu": "GPU",
+        "backend_hint": "CPU mode is built in and now keeps some logical processors free for Windows.\nGPU mode is optional and may require an external runtime download.",
         "save_checkbox": "Save results to Results.txt",
         "save_hint": "Automatically writes each found password\nto Results.txt next to the program.",
         # Log messages
@@ -151,7 +160,7 @@ TRANSLATIONS = {
         "col_file": "Файл",
         "col_type": "Тип",
         "col_password": "Пароль",
-        "col_duration": "Длительность",
+        "col_duration": "Время",
         "col_status": "Статус",
         "status_found": "Найден",
         "status_not_found": "Не найден",
@@ -175,6 +184,55 @@ TRANSLATIONS = {
         "confirm_msg": "Файл не защищён паролем. Продолжить?",
     },
 }
+
+TRANSLATIONS["en"].update({
+    "engine_label": "Engine:",
+    "engine_cpu": "CPU",
+    "engine_gpu": "GPU",
+    "engine_gpu_fallback": "CPU fallback",
+    "perf_checkbox": "Multi-core mode (leave system headroom)",
+    "perf_hint": (
+        "Uses almost all available CPU throughput while reserving some logical processors for Windows.\n"
+        "This keeps the app responsive under heavy wordlists and masks."
+    ),
+    "backend_label": "Backend:",
+    "backend_cpu": "CPU",
+    "backend_gpu": "GPU",
+    "backend_hint": (
+        "CPU mode is built in and now keeps some logical processors free for Windows.\n"
+        "GPU mode downloads an external backend into ~/Bruteforcer/lib/ when enabled."
+    ),
+    "gpu_device_label": "GPU device:",
+    "gpu_device_placeholder": "Detect GPU devices",
+})
+
+TRANSLATIONS["ru"].update({
+    "engine_label": "\u0414\u0432\u0438\u0436\u043e\u043a:",
+    "engine_cpu": "CPU",
+    "engine_gpu": "GPU",
+    "engine_gpu_fallback": "CPU fallback",
+    "col_protection": "\u0417\u0430\u0449\u0438\u0442\u0430",
+    "btn_clear_log": "\u041e\u0447\u0438\u0441\u0442\u0438\u0442\u044c \u0436\u0443\u0440\u043d\u0430\u043b",
+    "btn_export": "\u042d\u043a\u0441\u043f\u043e\u0440\u0442",
+    "btn_restore": "\u0412\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c",
+    "perf_checkbox": "\u041c\u043d\u043e\u0433\u043e\u044f\u0434\u0435\u0440\u043d\u044b\u0439 \u0440\u0435\u0436\u0438\u043c (\u0441 \u0437\u0430\u043f\u0430\u0441\u043e\u043c \u0434\u043b\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u044b)",
+    "perf_hint": (
+        "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442 \u043f\u043e\u0447\u0442\u0438 \u0432\u0441\u044e \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0443\u044e \u043c\u043e\u0449\u043d\u043e\u0441\u0442\u044c CPU, "
+        "\u043d\u043e \u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 \u0447\u0430\u0441\u0442\u044c \u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u0445 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u043e\u0440\u043e\u0432 Windows.\n"
+        "\u042d\u0442\u043e \u0441\u043d\u0438\u0436\u0430\u0435\u0442 \u0440\u0438\u0441\u043a \u043f\u0435\u0440\u0435\u0433\u0440\u0443\u0437\u043a\u0438 \u043d\u0430 \u0442\u044f\u0436\u0451\u043b\u044b\u0445 \u0441\u043b\u043e\u0432\u0430\u0440\u044f\u0445 \u0438 \u043c\u0430\u0441\u043a\u0430\u0445."
+    ),
+    "backend_label": "\u0411\u044d\u043a\u0435\u043d\u0434:",
+    "backend_cpu": "CPU",
+    "backend_gpu": "GPU",
+    "backend_hint": (
+        "CPU-\u0440\u0435\u0436\u0438\u043c \u0432\u0441\u0442\u0440\u043e\u0435\u043d \u0432 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0438 \u0442\u0435\u043f\u0435\u0440\u044c "
+        "\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 \u0447\u0430\u0441\u0442\u044c \u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u0445 "
+        "\u043f\u0440\u043e\u0446\u0435\u0441\u0441\u043e\u0440\u043e\u0432 \u0441\u0438\u0441\u0442\u0435\u043c\u0435.\n"
+        "GPU-\u0440\u0435\u0436\u0438\u043c \u043f\u0440\u0438 \u0432\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0438 \u0441\u043a\u0430\u0447\u0438\u0432\u0430\u0435\u0442 \u0432\u043d\u0435\u0448\u043d\u0438\u0439 backend \u0432 ~/Bruteforcer/lib/."
+    ),
+    "gpu_device_label": "\u0412\u0438\u0434\u0435\u043e\u043a\u0430\u0440\u0442\u0430:",
+    "gpu_device_placeholder": "\u041e\u0431\u043d\u0430\u0440\u0443\u0436\u0438\u0442\u044c GPU-\u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430",
+})
 
 # Global current language
 _current_lang = "en"
@@ -333,9 +391,16 @@ QSpinBox::up-button, QSpinBox::down-button {
     background-color: #333335;
     border: none;
     width: 16px;
+    color: #f0f0f0;
+    font-size: 11pt;
+    font-weight: 700;
 }
 QSpinBox::up-button:hover, QSpinBox::down-button:hover {
     background-color: #3a7bd5;
+}
+QSpinBox::up-arrow, QSpinBox::down-arrow {
+    width: 8px;
+    height: 8px;
 }
 
 /* LineEdit */
@@ -804,6 +869,53 @@ QLabel {{
         return self._fake_signal
 
 
+class VisibleStepSpinBox(QSpinBox):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.setStyleSheet("QSpinBox { padding-right: 20px; }")
+
+        self._btn_plus = QPushButton("+", self)
+        self._btn_plus.setCursor(Qt.PointingHandCursor)
+        self._btn_plus.setFocusPolicy(Qt.NoFocus)
+        self._btn_plus.clicked.connect(self.stepUp)
+
+        self._btn_minus = QPushButton("-", self)
+        self._btn_minus.setCursor(Qt.PointingHandCursor)
+        self._btn_minus.setFocusPolicy(Qt.NoFocus)
+        self._btn_minus.clicked.connect(self.stepDown)
+
+        btn_style = """
+            QPushButton {
+                background-color: #333335;
+                color: #f2f2f2;
+                border: none;
+                font-size: 10pt;
+                font-weight: 700;
+                padding: 0;
+            }
+            QPushButton:hover {
+                background-color: #3a7bd5;
+                color: #ffffff;
+            }
+            QPushButton:pressed {
+                background-color: #2f5ea4;
+            }
+        """
+        self._btn_plus.setStyleSheet(btn_style)
+        self._btn_minus.setStyleSheet(btn_style)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        btn_w = 16
+        half_h = max(1, self.height() // 2)
+        x = self.width() - btn_w - 1
+
+        self._btn_plus.setGeometry(x, 1, btn_w, half_h - 1)
+        self._btn_minus.setGeometry(x, half_h, btn_w, self.height() - half_h - 1)
+
+
 class ModernTerminal(QPlainTextEdit):
 
     def __init__(self):
@@ -825,6 +937,9 @@ class ModernTerminal(QPlainTextEdit):
         cursor.insertText(f"{timestamp} {text}\n", fmt)
         self.setTextCursor(cursor)
         self.ensureCursorVisible()
+
+    def add_separator(self, color="#2e2e30", char="-", width=56):
+        self.add_line(char * width, color)
 
 def build_ui(main_window):
 
@@ -877,6 +992,12 @@ QLabel {
     status_badge.setStyleSheet(STATUS_READY_STYLE)
     tb_layout.addWidget(status_badge)
     refs["status_badge"] = status_badge
+
+    engine_label = QLabel(f"{tr('engine_label')} {tr('engine_cpu')}")
+    engine_label.setStyleSheet(
+        "color: #9a9a9a; font-size: 8.5pt; font-family: 'Consolas', monospace; padding-left: 10px;")
+    tb_layout.addWidget(engine_label)
+    refs["engine_label"] = engine_label
 
     root_layout.addWidget(titlebar)
 
@@ -954,7 +1075,10 @@ QLabel {
     refs["dict_combo"] = dict_combo
 
     dict_browse = QPushButton("…")
-    dict_browse.setFixedWidth(34)
+    dict_browse.setText("+")
+    dict_browse.setIcon(main_window.style().standardIcon(QStyle.SP_DirOpenIcon))
+    dict_browse.setIconSize(QSize(14, 14))
+    dict_browse.setFixedWidth(44)
     dict_browse.setToolTip("Browse for wordlist file")
     dict_browse.clicked.connect(main_window.browse_custom_dict)
 
@@ -976,7 +1100,7 @@ QLabel {
     len_lbl.setFixedWidth(58)
     refs["len_lbl"] = len_lbl
 
-    min_length = QSpinBox()
+    min_length = VisibleStepSpinBox()
     min_length.setRange(1, 20)
     min_length.setValue(1)
     min_length.setFixedWidth(62)
@@ -987,7 +1111,7 @@ QLabel {
     dash_lbl.setAlignment(Qt.AlignCenter)
     dash_lbl.setFixedWidth(14)
 
-    max_length = QSpinBox()
+    max_length = VisibleStepSpinBox()
     max_length.setRange(1, 20)
     max_length.setValue(6)
     max_length.setFixedWidth(62)
@@ -1160,6 +1284,21 @@ QLabel {
     refs["tab_widget"] = tab_widget
 
     # Log tab
+    log_outer = QWidget()
+    log_outer.setStyleSheet("QWidget { background-color: #1e1e20; }")
+    log_layout = QVBoxLayout(log_outer)
+    log_layout.setContentsMargins(6, 6, 6, 6)
+    log_layout.setSpacing(6)
+
+    log_toolbar = QHBoxLayout()
+    log_toolbar.addStretch()
+    clear_log_btn = QPushButton(tr("btn_clear_log"))
+    clear_log_btn.setCursor(Qt.PointingHandCursor)
+    clear_log_btn.setIcon(main_window.style().standardIcon(QStyle.SP_TrashIcon))
+    refs["clear_log_btn"] = clear_log_btn
+    log_layout.addLayout(log_toolbar)
+    log_toolbar.addWidget(clear_log_btn)
+
     terminal = ModernTerminal()
     terminal.setStyleSheet("""
 QPlainTextEdit {
@@ -1173,7 +1312,8 @@ QPlainTextEdit {
     selection-background-color: #335577;
 }
 """)
-    tab_widget.addTab(terminal, tr("tab_log"))
+    log_layout.addWidget(terminal)
+    tab_widget.addTab(log_outer, tr("tab_log"))
     refs["terminal"] = terminal
 
     # Results tab
@@ -1183,9 +1323,9 @@ QPlainTextEdit {
     ro_layout.setContentsMargins(6, 6, 6, 6)
 
     results_table = QTableWidget()
-    results_table.setColumnCount(6)
+    results_table.setColumnCount(7)
     results_table.setHorizontalHeaderLabels([
-        tr("col_time"), tr("col_file"), tr("col_type"),
+        tr("col_time"), tr("col_file"), tr("col_type"), tr("col_protection"),
         tr("col_password"), tr("col_duration"), tr("col_status"),
     ])
     results_table.horizontalHeader().setStretchLastSection(True)
@@ -1197,6 +1337,23 @@ QPlainTextEdit {
     refs["results_table"] = results_table
 
     ro_layout.addWidget(results_table)
+
+    results_actions = QHBoxLayout()
+    results_actions.addStretch()
+
+    restore_results_btn = QPushButton(tr("btn_restore"))
+    restore_results_btn.setCursor(Qt.PointingHandCursor)
+    restore_results_btn.setIcon(main_window.style().standardIcon(QStyle.SP_BrowserReload))
+    refs["restore_results_btn"] = restore_results_btn
+    results_actions.addWidget(restore_results_btn)
+
+    export_results_btn = QPushButton(tr("btn_export"))
+    export_results_btn.setCursor(Qt.PointingHandCursor)
+    export_results_btn.setIcon(main_window.style().standardIcon(QStyle.SP_DialogSaveButton))
+    refs["export_results_btn"] = export_results_btn
+    results_actions.addWidget(export_results_btn)
+
+    ro_layout.addLayout(results_actions)
     tab_widget.addTab(results_outer, tr("tab_results"))
 
     # Settings tab
@@ -1217,12 +1374,42 @@ QPlainTextEdit {
     refs["performant_checkbox"] = performant_checkbox
     ps_layout.addWidget(performant_checkbox)
 
+    backend_row = QHBoxLayout()
+    backend_label = QLabel(tr("backend_label"))
+    backend_label.setStyleSheet("color: #666; font-size: 9pt;")
+    refs["backend_label"] = backend_label
+    backend_combo = QComboBox()
+    backend_combo.addItems([tr("backend_cpu"), tr("backend_gpu")])
+    refs["backend_combo"] = backend_combo
+    backend_row.addWidget(backend_label)
+    backend_row.addWidget(backend_combo, 1)
+    ps_layout.addLayout(backend_row)
+
+    gpu_device_row = QHBoxLayout()
+    gpu_device_label = QLabel(tr("gpu_device_label"))
+    gpu_device_label.setStyleSheet("color: #666; font-size: 9pt;")
+    refs["gpu_device_label"] = gpu_device_label
+    gpu_device_combo = QComboBox()
+    gpu_device_combo.addItem(tr("gpu_device_placeholder"))
+    refs["gpu_device_combo"] = gpu_device_combo
+    gpu_device_row.addWidget(gpu_device_label)
+    gpu_device_row.addWidget(gpu_device_combo, 1)
+    refs["gpu_device_row"] = gpu_device_row
+    ps_layout.addLayout(gpu_device_row)
+
     perf_hint = QLabel(tr("perf_hint"))
     refs["perf_hint"] = perf_hint
     perf_hint.setStyleSheet(
         "color: #484848; font-size: 8.5pt; padding-left: 26px; line-height: 160%;")
     perf_hint.setWordWrap(True)
     ps_layout.addWidget(perf_hint)
+
+    backend_hint = QLabel(tr("backend_hint"))
+    refs["backend_hint"] = backend_hint
+    backend_hint.setStyleSheet(
+        "color: #484848; font-size: 8.5pt; padding-left: 26px; line-height: 160%;")
+    backend_hint.setWordWrap(True)
+    ps_layout.addWidget(backend_hint)
 
     so_layout.addWidget(perf_section)
 

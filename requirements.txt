@@ -1,0 +1,12 @@
+# Runtime dependencies
+PySide6
+msoffcrypto-tool
+PyPDF2
+rarfile
+py7zr
+pyzipper
+olefile
+certifi
+
+# Optional: required only for building the standalone EXE
+# PyInstaller
