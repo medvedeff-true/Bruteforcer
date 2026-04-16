@@ -1,6 +1,6 @@
 <div align="center">
 
-# Bruteforcer
+# 🔐 Bruteforcer
 
 **[English](#english) · [Русский](#russian)**
 
