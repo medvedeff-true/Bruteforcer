@@ -13,7 +13,7 @@ Built with Python and PySide6, with CPU and optional GPU attack backends.
 
 <a name="russian"></a>
 
-<img width="1204" height="783" alt="Bruteforcer screenshot" src="https://github.com/user-attachments/assets/4e3a2e87-0708-4602-9cb9-ff842efff3b3" />
+<img width="1201" height="783" alt="{311366CF-0025-4FE7-B5F0-4386116E9E25}" src="https://github.com/user-attachments/assets/cd04fc88-ce47-413f-870e-a3293e1f3741" />
 
 <details open>
 <summary><strong>Последнее обновление</strong></summary>
