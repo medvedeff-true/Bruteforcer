@@ -15,8 +15,10 @@ Built with Python and PySide6, with CPU and optional GPU attack backends.
 
 <img width="1201" height="783" alt="{311366CF-0025-4FE7-B5F0-4386116E9E25}" src="https://github.com/user-attachments/assets/cd04fc88-ce47-413f-870e-a3293e1f3741" />
 
+#
+
 <details open>
-<summary><strong>Последнее обновление</strong></summary>
+<summary><strong><img width="19" height="20" alt="277031mbmmfoabln" src="https://github.com/user-attachments/assets/6161bda3-fa90-40be-8e71-c077bf96af9d" /> Последнее обновление</strong></summary>
 
 #### Новые возможности
 
@@ -191,9 +193,9 @@ dist/             готовая сборка после PyInstaller
 
 Инструмент предназначен только для восстановления доступа к собственным файлам или к файлам, на которые у вас есть явное разрешение. Несанкционированное использование против чужих данных может нарушать закон.
 
-### Важно
+### 🟥 Важно ‼️
 
-Если вы видите эту программу на случайных сайтах, в видео или в виде готового `exe`, скачанного не из официального источника, относитесь к такому файлу как к потенциально опасному.
+🟥 Данная программа рапространяется *ТОЛЬКО* здесь, если вы видите её на случайных сайтах, в видео на YouTube, а котором вам предлагают скачать её не из этогго репозитория, скорее всего это вирусная копия. Избегайте мошенников и `качайте программу исключительно отсюда`!
 
 ---
 
@@ -201,8 +203,10 @@ dist/             готовая сборка после PyInstaller
 
 <img width="1205" height="785" alt="Bruteforcer screenshot" src="https://github.com/user-attachments/assets/65b422b2-1111-44b2-9dfb-4e70f4013e94" />
 
+#
+
 <details>
-<summary><strong>Latest Update</strong></summary>
+<summary><strong><img width="19" height="20" alt="277031mbmmfoabln" src="https://github.com/user-attachments/assets/6161bda3-fa90-40be-8e71-c077bf96af9d" /> Latest Update</strong></summary>
 
 ### Additions and changes
 
@@ -336,9 +340,9 @@ dist/             generated build output
 
 This tool is intended only for recovering access to files you own or are explicitly authorized to access. Unauthorized use against third-party data may be illegal.
 
-### Safety note
+### 🟥 Safety note
 
-If you find this program repackaged on random sites, in videos, or as an untrusted prebuilt `exe`, treat that file as potentially unsafe.
+🟥 This program is distributed *ONLY* here, if you see it on random sites, in a YouTube video, and where you are offered to download it from a repository other than this one, it is most likely a viral copy. Avoid scammers and download the program exclusively from here!
 
 ---
 
